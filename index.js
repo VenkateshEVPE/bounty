@@ -1089,7 +1089,30 @@ app.get("/representatives/:locality", (req, res) => {
     }
   );
 });
+// PUT /representatives/edit
+app.put("/representatives/edit", (req, res) => {
+    const { locality, name, phone, email } = req.body;
 
+    if (!locality || !name) {
+        return res
+            .status(400)
+            .json({ error: "locality and name are required" });
+    }
+
+    db.run(
+        `UPDATE representatives SET phone = ?, email = ? WHERE locality = ? AND name = ?`,
+        [phone, email, locality, name],
+        function (err) {
+            if (err) {
+                res.status(500).json({ error: "Failed to update database" });
+            } else if (this.changes === 0) {
+                res.status(404).json({ error: "No representative found to update" });
+            } else {
+                res.json({ message: "Representative information updated" });
+            }
+        }
+    );
+});
 // POST /representatives/update
 app.post("/representatives/update", (req, res) => {
   const { locality, name, designation, phone, email } = req.body;
